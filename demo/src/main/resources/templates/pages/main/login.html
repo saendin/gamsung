@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Login Page</title>
+	<style>
+		body {
+			width: 100%;
+			height: 100%;
+	
+		}
+		
+		h3 {
+			text-align: center;
+		}
+		
+		button {
+			border-radius: 6px;
+			border: none;
+			padding: 5px 8px;
+		}
+		
+		.wrap {
+			display: flex;
+		 	justify-content:center; 
+		  	align-items : center;
+			width: 300px;
+			height: 850px;
+			margin: 0 auto;
+		}
+		
+		.contents {
+			width: 240px;
+			height: 200px;
+		}
+		
+		.wrap_btn{
+			text-align: center;
+		}
+	</style>
+</head>
+<script>
+// 	document.addEventListener("DOMContentLoaded", function(){
+// 		document.getElementById("userId").value = "";
+// 		document.getElementById("password").value = "";
+// 	});
+	
+	/* 로그인 */
+	function login() {
+
+		let id = document.getElementById("userId");
+		let pw = document.getElementById("password");
+		
+		if(!id.value) {
+			alert("아이디를 입력해주세요!");
+			id.focus();
+			return;
+		}
+
+		if(!pw.value) {
+			alert("비밀번호를 입력해주세요!");
+			pw.focus();
+			return;
+		}
+
+		//로그인 진행
+		fetch( "/loginProc.do", {
+ 		  method: "post"
+ 		  , headers: {
+ 		    "Content-Type": 'application/json; charset=UTF-8',
+ 		  }
+ 		  , body: JSON.stringify({
+ 			   userId : id.value,
+ 			   password : pw.value, })
+ 		})
+ 		.then(response => {
+			if(response.status == "404") {
+				alert("컨트롤러 도꼬?");
+				return;
+			}
+			if(response.status == "200") {
+	 	 		return response.json();
+			}
+ 	 	})
+		.then(response => {
+			console.log(response);
+
+			let data = response.result;
+// 			alert(data.resultMsg);
+
+			if(data.resultCode == "S") {
+				document.location.href = "/main.do"; //메인페이지 이동
+				
+			} else {
+				alert("아이디 혹은 비밀번호를 확인해주세요!");
+				return;
+			}
+		})
+		.catch(err => {
+		      console.log(err);
+		})
+	}
+</script>
+
+<body>
+	<div class="wrap">
+		<div class="contents">
+			<div class="wrap_input">
+				<h3>Welcome to here!</h3>
+			    id : <input type="text" id="userId" 	name="userId"><br>
+			    pw : <input type="text" id="password" 	name="password"><br><br>
+			</div>
+		
+			<div class="wrap_btn">
+				<button type="button" onclick="login(); return false;">로그인</button> <!-- form="loginForm" -->
+				<button type="button" onclick="document.location.href = '/signUpPage.do'">회원가입</button>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

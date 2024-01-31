@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saendino.demo.cmm.mapper.UserMapper">
+
+	<select id="selectUserList" resultType="map">
+        SELECT COUNT(1) cnt
+        FROM a_user
+	</select>
+	
+	<select id="checkIdPw" resultType="map">
+		SELECT COUNT(1) cnt
+		  FROM A_USER
+		 WHERE USER_ID  = #{userId}
+		   AND PASSWORD = #{password}
+	</select>
+	
+	
+	<insert id="insertUser">
+		INSERT INTO A_USER (
+			USER_SN
+			, USER_ID
+			, AUTHOR_CD
+			, GRADE_CD
+			, USER_NM
+			, PASSWORD
+			, PHONE
+			, ZIP
+			, ADDRESS1
+			, ADDRESS2
+			, LOCK_AT
+			, USE_AT
+			, REGIST_DT
+		)
+		VALUES (
+			'SN' || LPAD(user_sn_seq.nextVal,8,'0')
+			, #{userId}
+			, #{authorCd}
+			, #{gradeCd}
+			, #{userNm}
+			, #{password}
+			, #{phone}
+			, #{zip}
+			, #{address1}
+			, #{address2}
+			, 'N'
+			, 'Y'
+			, SYSDATE
+		)
+	</insert>
+</mapper>

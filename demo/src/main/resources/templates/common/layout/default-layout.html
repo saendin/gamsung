@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"						
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"> <!-- xmlns:layout: layout의 틀임을 알려줌 -->
+	
+	<!--공통 JS / CSS 영역을 관리하는 환경 영역-->
+	
+	<!-- [head] 영역 시작 -->
+	<head th:replace="common/fragments/head :: headFragment">
+		<title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">공통 타이틀</title>
+	</head>
+	<!-- [head] 영역 끝 -->
+	
+	<body>
+		<!-- [header] 영역 시작 -->
+		<header th:replace="common/fragments/header :: headerFragment"></header>
+		<!-- [header] 영역 끝 -->
+		
+		<!-- [content] 영역 시작 -->
+		<th:block layout:fragment="content"></th:block>
+		<!-- [content] 영역 끝 -->
+		
+		<!-- [footer] 영역 시작 -->
+		<footer th:replace="common/fragments/footer :: footerFragment"></footer>
+		<!-- [footer] 영역 끝 -->
+	</body>
+</html>

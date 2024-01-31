@@ -1,0 +1,51 @@
+<!--headerFragment-->
+<!DOCTYPE html>
+<html	lang="ko"
+		xmlns:th="http://www.thymeleaf.org"
+		th:fragment="headerFragment">
+	
+	<head>
+		<style>
+			.nav_wrap {
+				width: 100%;
+				height:150px;
+/* 				background: #f6b3b3; */
+				font-size: 1.5em;
+				padding: 5px;
+			}
+			.nav_wrap ul {
+				list-style: none;			
+			}
+			.nav_wrap li {
+				display: inline-block;
+				margin-right: 30px;
+			}
+			
+			.title {
+				text-align: right;
+			}
+		</style>
+	</head>
+	<!-- 대메뉴 -->
+	<div class="nav_wrap">
+		<div class="title">
+			<h4>안녕하세요 <span th:text="${id}+'님'"></span> 반갑습니다.</h4>
+		</div>
+		<ul class="nav" style="">
+			<li>
+				<a class="page-scroll" href="/">홈</a>
+			</li>
+			<li>
+				<a class="page-scroll" href="#">대메뉴1</a>
+			</li>
+			<li>
+				<a class="page-scroll" href="#">대메뉴2</a>
+			</li>
+			<li>
+				<a class="page-scroll" href="#">대메뉴3</a>
+			</li>
+		</ul>
+	</div>
+	<!-- /대메뉴 -->
+
+</html>
