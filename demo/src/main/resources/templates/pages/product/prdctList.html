@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html	lang="ko"
+		xmlns:th="http://www.thymeleaf.org"
+		th:fragment="prdctList">
+<script>
+	document.addEventListener("DOMContentLoaded", function(){
+		selectProductList();
+	});
+	
+	function selectProductList(){
+		// formData 값 객체 변환
+		let dataInfo = {};
+		
+		// 상품 조회 진행
+		fetch( "/selectProductList.do", {
+			  method: "post"
+			  , headers: {
+			    "Content-Type": 'application/json; charset=UTF-8',
+			  }
+			  , body: JSON.stringify({ dataInfo })
+		})
+		.then(response => {
+			if(response.status == "403" || response.status == "404") {
+				alert("오류");
+				return;
+			}
+			if(response.status == "200") {
+	 	 		return response.json();
+			}
+	 	})
+		.then(data => {
+			console.log(data);
+	
+			if(data.resultCode == "S") {
+				console.log(data.resultMap.result);
+				gridProductList(data.resultMap.result); //데이터 리스트 재조회
+				
+			} else {
+				alert("처리중 예기치 못한 오류가 발생했어요!");
+				return;
+			}
+		})
+		.catch(err => {
+		      console.log(err);
+		});
+	}
+
+	/* 상품 추가 */
+	function addProduct() {
+
+			let form = document.getElementById("productForm");
+			
+			let formData = new FormData(form);
+		
+			// formData 값 객체 변환
+			let dataInfo = {};
+			formData.forEach((value, key) => dataInfo[key] = value);
+		
+			dataInfo.useAt = document.querySelector('input[name="useAt"]:checked').value;
+			
+			console.log(dataInfo);	//폼데이터를 객체로 변환
+			
+		if(confirm("상품을 등록하시겠습니까?")) {
+			// 상품등록 진행
+			fetch( "/addProduct.do", {
+				  method: "post"
+				  , headers: {
+				    "Content-Type": 'application/json; charset=UTF-8',
+				  }
+				  , body: JSON.stringify({ dataInfo })
+			})
+			.then(response => {
+				if(response.status == "403" || response.status == "404") {
+					alert("오류");
+					return;
+				}
+				if(response.status == "200") {
+		 	 		return response.json();
+				}
+		 	})
+			.then(response => {
+				console.log(response);
+		
+				let data = response;
+		
+				if(data.resultCode == "S") {
+					console.log(data.resultMap);
+					
+					alert("상품 등록이 완료되었습니다!");
+					modal1.click()
+					selectProductList(); //데이터 리스트 재조회
+					
+				} else {
+					alert(data.resultMsg);
+					return;
+				}
+			})
+			.catch(err => {
+			      console.log(err);
+			});
+		};
+	}
+	
+	/* 야매상품추가 */
+// 	let tabNum = 1;
+	function gridProductList(data){
+// 		tabNum++;
+		
+		data.map(function(item) {
+			let tab = document.createElement('div');
+			console.log(item);
+			tab.setAttribute("id",item.PRODUCT_ID);
+			
+			tab.setAttribute("class","col-md-6 col-lg-4 col-xl-3");
+			tab.innerHTML =
+	            `
+	            <div class="rounded position-relative fruite-item">
+	                 <div class="fruite-img">
+	                     <img src="${item.FILE_ID}" class="img-fluid w-100 rounded-top" alt="" onclick="showDetailPage(${item.PRODUCT_ID})">
+	                 </div>
+	                 <div class="text-white bg-danger px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">히트</div>
+	                 <div class="p-4 border border-dark border-top-0 rounded-bottom">
+	                     <h4>${item.NAME}</h4>
+	                     <p>${item.DISCRIPTION}</p>
+	                     <div class="d-flex justify-content-between flex-lg-wrap">
+	                         <p class="text-dark fs-5 fw-bold mb-0">${item.COST}</p>
+	                         <a href="#" class="btn border border-dark rounded-pill px-3 text-dark"><i class="fa fa-shopping-bag me-2 text-dark"></i> Add to cart</a>
+	                     </div>
+	                 </div>
+	             </div>
+	             `;
+	             
+	        (document.getElementById('p_prdct')).appendChild(tab);
+		});
+	}
+
+	function showDetailPage(productId) {
+		let form = document.createElement('form');
+		form.setAttribute('id', 'productDetailFrm');
+		form.setAttribute('name', 'productDetailFrm');
+		form.setAttribute('method', 'post');
+		form.setAttribute('action', '/demo/product/prdctDetail.do');
+
+		let productIdInput = document.createElement('input');
+		productIdInput.setAttribute('type','hidden');
+		productIdInput.setAttribute('id','productId');
+		productIdInput.setAttribute('name','productId');
+		productIdInput.setAttribute('value',productId);
+
+		form.appendChild(productIdInput);
+		form.submit();
+	}
+</script>
+<body>
+    <!-- Fruits Shop Start-->
+    <div class="container-fluid fruite py-5">
+        <div class="container py-5">
+        
+            <!-- 상품 추가 버튼 -->
+			<div style="display: block;">
+				<button class="btn modal_btn" type="button" id="pop_1" style="float:right; background-color:black; color:white;">상품 야매로 추가</button>
+			</div>
+			<!-- //상품 추가 버튼 -->
+			
+            <div class="tab-class text-center">
+            
+            	<!-- 카테고리 추가 -->
+                <div class="row g-4">
+                    <div class="col-lg-4 text-start">
+                        <h1>Our Products</h1>
+                    </div>
+                    <div class="col-lg-8 text-end">
+                        <ul class="nav nav-pills d-inline-flex text-center mb-5">
+                            <li class="nav-item">
+                                <a class="d-flex m-2 py-2 bg-dark rounded-pill active" data-bs-toggle="pill" href="#tab-1">
+                                    <span class="text-white" style="width: 130px;">전체</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="d-flex py-2 m-2 bg-dark rounded-pill" data-bs-toggle="pill" href="#tab-2">
+                                    <span class="text-white" style="width: 130px;">사랑</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="d-flex m-2 py-2 bg-dark rounded-pill" data-bs-toggle="pill" href="#tab-3">
+                                    <span class="text-white" style="width: 130px;">젊음</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="d-flex m-2 py-2 bg-dark rounded-pill" data-bs-toggle="pill" href="#tab-4">
+                                    <span class="text-white" style="width: 130px;">낭만</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            	<!-- //카테고리 추가 -->
+            	
+            	<!-- 상품 목록 -->
+                <div class="tab-content">
+                    <div id="tab-1" class="tab-pane fade show p-0 active">
+                        <div class="row g-4">
+                            <div class="col-lg-12">
+                                <div id="p_prdct" class="row g-4">
+<!--                                 
+                                    <div id="c_prdct" class="col-md-6 col-lg-4 col-xl-3">
+                                        <div class="rounded position-relative fruite-item">
+                                            <div class="fruite-img">
+                                                <img src="https://image.bugsm.co.kr/album/images/500/203311/20331192.jpg" class="img-fluid w-100 rounded-top" alt="">
+                                            </div>
+                                            <div class="text-white btn-danger bg-danger px-3 py-1 rounded position-absolute" style="top: 10px; left: 10px;">히트</div>
+                                            <div class="p-4 border border-dark border-top-0 rounded-bottom">
+                                                <h4>사랑 젊음 낭만</h4>
+                                                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod te incididunt</p>
+                                                <div class="d-flex justify-content-between flex-lg-wrap">
+                                                    <p class="text-dark fs-5 fw-bold mb-0">$9999.99 / kg</p>
+                                                    <a href="#" class="btn border border-dark rounded-pill px-3 text-dark"><i class="fa fa-shopping-bag me-2 text-dark"></i> Add to cart</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+-->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            	<!-- //상품 목록 -->
+            </div>
+        </div>
+    </div>
+	<!-- Fruits Shop End-->
+	
+	<!-- 상품 추가 모달 팝업 -->
+	<div class="modal md1">
+	    <div id="popup_1" class="modal_popup">
+	    
+	    	<form id="productForm" name="productForm">
+		        <h3>상품 추가</h3>
+		        <table id="productTbl" class="w-100">
+		        	<thead>
+		        	</thead>
+		        	<tbody>
+				        <!-- 상품명 -->
+		        		<tr>
+		        			<td>
+	       						<input type="text" id="productNm" name="name" class="w-100" placeholder="title">
+		        			</td>
+		        		</tr>
+			       		<!-- //상품명 -->
+			       		<!-- 카테고리 -->
+		        		<tr>
+		        			<td>
+					       		<select id="ctgCd" name="ctgCd" class="w-100">
+					       			<option value="">::: 카테고리 선택 :::</option>
+					       			<option value="C0100">상의</option>
+					       			<option value="C0200">하의</option>
+					       			<option value="C0300">잡화</option>
+					       			<option value="C0999">기타</option>
+					       		</select>
+		        			</td>
+		        		</tr>
+			       		<!-- //카테고리 -->
+				        <!-- 가격 -->
+		        		<tr>
+		        			<td>
+								<input type="text" id="cost" name="cost" class="w-100" placeholder="cost">
+		        			</td>
+		        		</tr>
+			       		<!-- //가격 -->
+			       		<!-- 상품 사용 유무 -->
+		        		<tr>
+		        			<td>
+					       		<div class="wrap_radio w-100">
+						       		<input type="radio" id="useAtY" name="useAt" value="Y" checked>사용
+						       		<input type="radio" id="useAtN" name="useAt" value="N">숨김
+						       		<input type="hidden" id="useAt"  name="useAt" value="">
+						       	</div>
+		        			</td>
+		        		</tr>
+			       		<!-- //상품 사용 유무 -->
+		        		<!-- 파일첨부 -->
+		        		<tr>
+		        			<td>
+	       						<input type="file" id="file" name="file" class="w-100" placeholder="file">
+		        			</td>
+		        		</tr>
+		        		<!-- //파일첨부 -->
+		        	</tbody>
+		        </table>
+	       	</form>
+       		 
+       		<!-- 등록버튼 -->
+	       	<div class="wrap_btn">
+	        	<button type="button" class="submit_btn" onclick="addProduct();">등록</button>
+	        	<button type="button" class="close_btn">닫기</button>
+	        </div>
+	        <!-- //등록버튼 -->
+	    </div>
+	   </div>
+	<!-- //상품 추가 모달 팝업 -->
+	
+	<script>
+		const modal = document.querySelectorAll('.modal');
+		const modal1 = document.querySelector('.md1');
+		const modal2 = document.querySelector('.md2');
+		const modalOpen = document.querySelectorAll('.modal_btn');
+		const modalClose = document.querySelectorAll('.close_btn');
+		
+		document.addEventListener("DOMContentLoaded", function(){
+	
+			console.log(modalOpen[0]);
+	
+			// 팝업 열기 이벤트 등록
+			modalOpen[0].addEventListener('click', function(){
+				//'on' class 추가
+				modal1.classList.add('on'); 
+		   });
+			 
+		  	modalClose[0].addEventListener('click', function(){
+		    	//'on' class 제거
+	    		modal1.classList.remove('on');
+		   });
+		});
+	</script>
+</body>
+</html>
