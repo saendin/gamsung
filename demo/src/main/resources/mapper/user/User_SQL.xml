@@ -7,13 +7,14 @@
         FROM a_user
 	</select>
 	
+	
 	<select id="checkIdPw" resultType="map">
+		/* checkIdPw 로그인 성공 여부 */
 		SELECT COUNT(1) cnt
 		  FROM A_USER
 		 WHERE USER_ID  = #{userId}
 		   AND PASSWORD = #{password}
 	</select>
-	
 	
 	<insert id="insertUser">
 		INSERT INTO A_USER (
@@ -45,6 +46,29 @@
 			, 'N'
 			, 'Y'
 			, SYSDATE
-		)
+		) 
 	</insert>
+	
+	<select id="duplChkUserId" resultType="int">
+		SELECT COUNT(1) cnt
+		  FROM A_USER
+		 WHERE USER_ID = #{userId}
+		 <if test='userNm != null and userNm != ""'>
+		 AND USER_NM = #{userNm}
+		 AND PHONE 	 = #{phone}
+		 </if>
+	</select>
+	
+	<select id="findId" resultType="String">
+		SELECT NVL(USER_ID, '')
+		  FROM A_USER
+		 WHERE USER_NM  = #{userNm}
+		   AND PHONE 	= #{phone}
+	</select>
+	
+	<update id="setNewPassword">
+		UPDATE A_USER
+		   SET PASSWORD = #{password}
+		 WHERE USER_ID  = #{userId}
+	</update>
 </mapper>

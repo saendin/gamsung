@@ -3,7 +3,6 @@
 <html	lang="ko"
 		xmlns:th="http://www.thymeleaf.org"
 		th:fragment="headerFragment">
-	
 	<head>
 		<style>
 			.nav_wrap {
@@ -13,9 +12,7 @@
 				font-size: 1.5em;
 				padding: 5px;
 			}
-			.nav_wrap ul {
-				list-style: none;			
-			}
+			
 			.nav_wrap li {
 				display: inline-block;
 				margin-right: 30px;
@@ -26,26 +23,161 @@
 			}
 		</style>
 	</head>
-	<!-- 대메뉴 -->
-	<div class="nav_wrap">
-		<div class="title">
-			<h4>안녕하세요 <span th:text="${id}+'님'"></span> 반갑습니다.</h4>
-		</div>
-		<ul class="nav" style="">
-			<li>
-				<a class="page-scroll" href="/">홈</a>
-			</li>
-			<li>
-				<a class="page-scroll" href="#">대메뉴1</a>
-			</li>
-			<li>
-				<a class="page-scroll" href="#">대메뉴2</a>
-			</li>
-			<li>
-				<a class="page-scroll" href="#">대메뉴3</a>
-			</li>
-		</ul>
-	</div>
-	<!-- /대메뉴 -->
+	<script>
+	document.addEventListener("DOMContentLoaded", function(){
+		/* 메뉴조회 */
+/* 		let formData = new FormData(form); */
+	
+		// formData 값 객체 변환
+/* 		let dataInfo = {};
+		formData.forEach((value, key) => dataInfo[key] = value);
+	
+		console.log(form);		//폼태그
+		console.log(formData);	//폼데이터로 변환
+		console.log(dataInfo);	//폼데이터를 객체로 변환
+		
+		console.log(); */
+			
+		// 메뉴 조회
+		fetch( "/menu.do", {
+			  method: "post",
+			  headers: {
+			    "Content-Type": 'application/json; charset=UTF-8',
+			  },
+			  body: JSON.stringify({ userSn : 'SN00000001' })
+			})
+			.then(response => {
+				if(response.status == "403" || response.status == "404") {
+					alert("오류");
+					return;
+				}
+				if(response.status == "200") {
+		 	 		return response.json();
+				}
+		 	})
+			.then(response => {
+				console.log(response);
+				console.log(response.result);
 
+				let list = response.result;
+				makeMenu(list); //대메뉴 생성
+				
+			})
+			.catch(err => {
+			      console.log(err);
+			})
+	})
+	
+	function makeMenu(list){
+		let pMenuDiv = document.getElementById('p_menu');
+		
+		for(let i=0; i<list.length; i++){
+
+			//부모메뉴 추가
+			if(!list[i].UPPER_MENU_ID){
+				//대메뉴 감싸는 드롭바 div 생성
+				let pDivTag = document.createElement('div');			// 드롭바 대메뉴 div태그 생성
+				pDivTag.setAttribute('class', 'nav-item dropdown'); 	// 드롭바 대메뉴 div class 추가
+
+				//대메뉴 태그 생성
+				let aTag = document.createElement('a');					// 대메뉴 a태그 생성
+				aTag.setAttribute('id', list[i].MENU_ID); 				// 메뉴 id 추가
+				aTag.setAttribute('href', list[i].URL); 				// 메뉴 url 추가
+				aTag.setAttribute('class', 'nav-link dropdown-toggle'); // 대메뉴 class 추가
+				aTag.setAttribute('data-bs-toggle', 'dropdown'); 		// 드롭바 class 추가
+
+				aTag.innerText = list[i].MENU_NM; //메뉴명 추가
+
+				//append
+				pDivTag.appendChild(aTag);
+				pMenuDiv.appendChild(pDivTag);
+				
+			} else {
+				//부모메뉴 div찾기
+				let pDivTag = document.getElementById(list[i].UPPER_MENU_ID);
+				
+				//자식메뉴div
+				let cDivTag = "";
+				
+				if(document.getElementById('c_' + list[i].UPPER_MENU_ID)) { //자식 감싸는 div 존재할 때
+					cDivTag = document.getElementById('c_' + list[i].UPPER_MENU_ID);
+				} else { //자식 감싸는 div 존재하지 않을 때
+					cDivTag = document.createElement('div');				// 드롭바 자식메뉴 div태그 생성
+					cDivTag.setAttribute('id', 'c_' + list[i].UPPER_MENU_ID); 	// 드롭바 자식메뉴 div class 추가
+					cDivTag.setAttribute('class', 'dropdown-menu m-0 bg-secondary rounded-0'); 	// 드롭바 자식메뉴 div class 추가
+				}
+				
+				//자식메뉴 태그 생성
+				let aTag = document.createElement('a');					// 대메뉴 a태그 생성
+				aTag.setAttribute('id', list[i].MENU_ID); 				// 메뉴 id 추가
+				aTag.setAttribute('href', '/demo' + list[i].URL); 		// 자식메뉴 url 추가
+				aTag.setAttribute('class', 'dropdown-item'); 			// 자식메뉴 class 추가
+
+				aTag.innerText = list[i].MENU_NM; //메뉴명 추가
+
+				//append
+				cDivTag.appendChild(aTag);	  //자식메뉴div에 append
+				pDivTag.appendChild(cDivTag); //부모메뉴에 append
+			}
+		}
+	}
+	</script>
+		<!-- 메뉴 -->
+       	<div class="container-fluid fixed-top">
+           <div class="container topbar d-none d-lg-block"> <!-- bg-primary -->
+               <div class="d-flex justify-content-between">
+                   <div class="top-info ps-2">
+                       <small class="me-3 text-dark"><i class="fas fa-map-marker-alt me-2 text-dark"></i> <a href="#" class="text-dark">123 Street, New York</a></small><!-- class="text-white" -->
+                       <small class="me-3 text-dark"><i class="fas fa-envelope me-2 text-dark"></i><a href="#" class="text-dark">Email@Example.com</a></small><!-- class="text-white" -->
+                   </div>
+                   <div class="top-link pe-2">
+                       <a href="#"><small class="mx-2 text-dark">Privacy Policy</small>/</a><!-- class="text-white" -->
+                       <a href="#"><small class="mx-2 text-dark">Terms of Use</small>/</a><!-- class="text-white" -->
+                       <a href="#"><small class="ms-2 text-dark">Sales and Refunds</small></a><!-- class="text-white" -->
+                   </div>
+<!--                 </div> -->
+           </div>
+           <div class="container px-0">
+               <nav class="navbar navbar-light bg-white navbar-expand-xl">
+                   <a href="/demo/main/main.do" class="navbar-brand"><h1 class="display-6">HELLOWORLD</h1></a><!-- text-primary -->
+                   <button class="navbar-toggler py-2 px-3" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+                       <span class="fa fa-bars"></span><!-- text-primary -->
+                   </button>
+                   <!--  -->
+                   <div class="collapse navbar-collapse bg-white" id="navbarCollapse">
+                   
+                   	<!-- nav -->
+                       <div id="p_menu" class="navbar-nav mx-auto">
+                           <!-- drop_parent menu -->
+<!--                             <div class="nav-item dropdown"> -->
+<!--                                 <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a> -->
+<!--                                 <div id="" class="dropdown-menu m-0 bg-secondary rounded-0"> -->
+<!--                                     <a href="cart.html" class="dropdown-item">Cart</a> -->
+<!--                                     <a href="chackout.html" class="dropdown-item">Chackout</a> -->
+<!--                                     <a href="testimonial.html" class="dropdown-item">Testimonial</a> -->
+<!--                                     <a href="/static/404.html" class="dropdown-item">404 Page</a> -->
+<!--                                 </div> -->
+<!--                             </div> -->
+                           <!-- //drop_parent menu -->
+                           
+                       </div>
+                       <!-- //parent menu -->
+                       
+                       <div class="d-flex m-3 me-0">
+                           <button class="btn-search btn border border-dark btn-md-square rounded-circle bg-white me-4" data-bs-toggle="modal" data-bs-target="#searchModal"><i class="fas fa-search text-dark"></i></button>
+                           <a href="/demo/cart/cart.do" class="position-relative me-4 my-auto" style="color: gray">
+                               <i class="fa fa-shopping-bag fa-2x"></i>
+                               <span class="position-absolute bg-secondary rounded-circle d-flex align-items-center justify-content-center text-dark px-1" style="top: -5px; left: 15px; height: 20px; min-width: 20px;">3</span>
+                           </a>
+                           <a href="/demo/main/mypage.do" class="my-auto" style="color: gray">
+                               <i class="fas fa-user fa-2x"></i>
+                           </a>
+                       </div>
+                   </div>
+                   <!--  -->
+               </nav>
+           </div>
+       </div>
+	</div>
+	<!-- 메뉴 -->
 </html>

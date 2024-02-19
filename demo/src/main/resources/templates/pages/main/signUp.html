@@ -7,7 +7,7 @@
 		body {
 			width: 100%;
 			height: 100%;
-	
+			background-image: url('https://previews.123rf.com/images/sergio34/sergio341810/sergio34181000327/110600156-black-grainy-texture-isolated-on-white-background-dust-overlay-dark-noise-granules-bitmap-design.jpg');
 		}
 		
 		h3 {
@@ -18,6 +18,8 @@
 			border-radius: 6px;
 			border: none;
 			padding: 5px 8px;
+			background-color: black;
+			color: white;
 		}
 		
 		.wrap {
@@ -30,12 +32,21 @@
 		}
 		
 		.contents {
-			width: 260px;
-			height: 200px;
+			width: 320px;
+			height: 420px;
+			background-color: #fff;
+			padding: 10px 15px;
+			border-radius: 30px;
 		}
 		
 		.wrap_btn{
 			text-align: center;
+		}
+		
+		.btn2{
+			display: inline-block;
+			background-color: #ddd;
+			color: black;
 		}
 		
 		.phone{
@@ -48,88 +59,178 @@
 	</style>
 </head>
 <script>
-
-/* 유효성검사 */
-function validation() {
-// 	if(!id.value) {
-//		alert("아이디를 입력해주세요!");
-//		id.focus();
-//		return;
-//	}
-
-//	if(!pw.value) {
-//		alert("비밀번호를 입력해주세요!");
-//		pw.focus();
-//		return;
-//	}
-
-//	if(!pw.value) {
-//		alert("비밀번호를 확인해주세요!");
-//		pw.focus();
-//		return;
-//	}
-
-//	if(!pw.value) {
-//		alert("휴대폰 번호를 입력해주세요!");
-//		pw.focus();
-//		return;
-//	}
-
-	signUp(); // 회원가입
-}
-
-
-/* 회원가입 */
-function signUp() {
-	let form = document.getElementById("signUpForm");
+	/* 유효성검사 */
+	let idChk = false;
 	
-	let formData = new FormData(form);
-
-	// formData 값 객체 변환
-	let dataInfo = {};
-	formData.forEach((value, key) => dataInfo[key] = value);
-
-	console.log(form);		//폼태그
-	console.log(formData);	//폼데이터로 변환
-	console.log(dataInfo);	//폼데이터를 객체로 변환
+	function chgId() {
+		idChk = false;
+	}
 	
-	console.log();
+	function pwChk() {
+		let pw = document.getElementById("password");
+		let pwChk = document.getElementById("passwordChk");
+		let pwChkTxt = document.getElementById("pwChkTxt");
 	
-	// 회원가입 진행
-	fetch( "/signUp.do", {
-		  method: "post"
-		  , headers: {
-		    "Content-Type": 'application/json; charset=UTF-8',
-		  }
-		  , body: JSON.stringify({ dataInfo })
+		
+		let color = "green";
+		let txt = "";
+		
+		if(pw.value == pwChk.value){
+			txt = "비밀번호가 일치합니다."
+		} else {
+			txt = "비밀번호를 확인해주세요!"
+			color = "red";
+		}
+	
+		pwChkTxt.innerText = txt;
+		pwChkTxt.style.color = color;
+	}
+
+	function validation() {
+		let id = document.getElementById("userId");
+		let pw = document.getElementById("password");
+		let pwChk = document.getElementById("passwordChk");
+		
+		if(!id.value) {
+			alert("아이디를 입력해주세요!");
+			id.focus();
+			return;
+		}
+	
+		if(!idChk) {
+			alert("아이디를 확인해주세요!");
+			id.focus();
+			return;
+		}
+	
+		if(!pw.value) {
+			alert("비밀번호를 입력해주세요!");
+			pw.focus();
+			return;
+		}
+	
+		//비밀번호 확인 X 및 불일치
+		if(!pwChk.value || pw.value != pwChk.value) {
+			alert("비밀번호를 확인해주세요!");
+			pw.focus();
+			return;
+		}
+	
+	/* 	if(!phone.value) {
+			alert("휴대폰 번호를 입력해주세요!");
+			phone.focus();
+			return;
+		} */
+	
+		if(confirm("회원가입 하시겠습니까?")){
+			signUp(); // 회원가입
+		} else {
+			return;
+		}
+	}
+
+	/* 아이디 중복체크 */
+	function chkId() {
+		let id = document.getElementById("userId");
+	
+		if(!id.value) {
+			alert("아이디를 입력해주세요!");
+			id.focus();
+			return;
+		}
+		
+		// 아이디 중복체크 진행
+		fetch( "/checkDuplId.do", {
+			  method: "post"
+			  , headers: {
+			    "Content-Type": 'application/json; charset=UTF-8',
+			  }
+			  , body: JSON.stringify({ userId : id.value })
 		})
 		.then(response => {
-		if(response.status == "404") {
-			alert("컨트롤러 도꼬?");
-			return;
-		}
-		if(response.status == "200") {
- 	 		return response.json();
-		}
+			if(response.status == "403" || response.status == "404") {
+				alert("오류 발생");
+				return;
+			}
+			if(response.status == "200") {
+	 	 		return response.json();
+			}
 	 	})
-	.then(response => {
-		console.log(response);
-
-		let data = response.result;
-
-		if(data.resultCode == "S") {
-			alert("회원가입이 완료되었습니다!");
-			document.location.href = "/login.do"; //로그인 페이지 이동
-			
-		} else {
-			alert("회원가입 도중 예기치 못한 오류가 발생했어요!");
-			return;
-		}
-	})
-	.catch(err => {
-	      console.log(err);
-	})
-}
+		.then(response => {
+			console.log(response);
+	
+			let data = response.result;
+	
+			if(data.resultCode == "S") {
+				idChk = true;
+				
+				alert("사용 가능한 아이디입니다.");
+				
+			} else {
+				idChk = false;
+				
+				alert("이미 사용중인 아이디입니다!");
+				
+				id.value = "";
+				id.focus();
+				return;
+			}
+		})
+		.catch(err => {
+		      console.log(err);
+		});
+	}
+	/* 회원가입 */
+	function signUp() {
+		let form = document.getElementById("signUpForm");
+		
+		let formData = new FormData(form);
+	
+		// formData 값 객체 변환
+		let dataInfo = {};
+		formData.forEach((value, key) => dataInfo[key] = value);
+	
+		console.log(form);		//폼태그
+		console.log(formData);	//폼데이터로 변환
+		console.log(dataInfo);	//폼데이터를 객체로 변환
+		
+		console.log();
+	
+		// 회원가입 진행
+		fetch( "/signUp.do", {
+			  method: "post"
+			  , headers: {
+			    "Content-Type": 'application/json; charset=UTF-8',
+			  }
+			  , body: JSON.stringify({ dataInfo })
+		})
+		.then(response => {
+			if(response.status == "403" || response.status == "404") {
+				alert("오류");
+				return;
+			}
+			if(response.status == "200") {
+	 	 		return response.json();
+			}
+	 	})
+		.then(response => {
+			console.log(response);
+	
+			let data = response.result;
+	
+			if(data.resultCode == "S") {
+				alert("회원가입이 완료되었습니다!");
+				document.location.href = "/demo/main/login.do"; //로그인 페이지 이동
+				
+			} else {
+				alert("회원가입 도중 예기치 못한 오류가 발생했어요!");
+				return;
+			}
+		})
+		.catch(err => {
+		      console.log(err);
+		});
+	}
 </script>
 <body>
 	<div class="wrap">
@@ -137,19 +238,28 @@ function signUp() {
 			<div class="wrap_input">
 				<h3>Sign up here!</h3>
 				<form id="signUpForm" name="signUpForm">
-				    <input type="text" id="userId" class="w-100" name="userId" placeholder="id"><br>
-				    <input type="text" id="password" class="w-100"	name="password" placeholder="password"><br>
-				    <input type="text" id="passwordChk" class="w-100"	name="passwordChk" placeholder="check password"><br><br>
+				    <input type="text" id="userId" name="userId" onchange="chgId();" placeholder="id">
+				    <button type="button" class="btn2" onclick="chkId(); return false;">중복체크</button>
+				    <br><br>
+				    <input type="text" id="userNm" name="userNm" class="w-100" placeholder="user name">
+				    <br><br>
+				    <input type="password" id="password" class="w-100" name="password" placeholder="password" onchange="pwChk();"><br>
+				    <input type="password" id="passwordChk" class="w-100" name="passwordChk" placeholder="check password" onchange="pwChk();"><br>
+				    <span id="pwChkTxt" style="font-size: 0.8rem; font-weight: bold;"></span>
+				    <br><br>
 				    
-				    <select id="phone1" class="phone" name="phone1">
+				    <select id="phone1" name="phone1" class="phone">
 				    	<option value="010">010</option>
 				    </select>
-				    <input type="text" class="phone" id="phone2" name="phone2">
-				    <input type="text" class="phone" id="phone3" name="phone3">
+				    <input type="text" id="phone2" name="phone2" class="phone" maxlength="4">
+				    <input type="text" id="phone3" name="phone3" class="phone" maxlength="4">
+				    
+				    <button type="button" class="btn2" onclick="certificate(); return false;">인증하기</button>
 				    
 				    <br><br>
 				    
-				    <input type="text" id="zip" name="zip" placeholder="zip"><br>
+				    <input type="text" id="zip" name="zip" placeholder="zip" maxlength="5">
+				    <button type="button" class="btn2" onclick="searchZip(); return false;">우편번호찾기</button><br><br>
 				    <input type="text" id="address1" class="w-100" name="address1" placeholder="address"><br>
 				    <input type="text" id="address2" class="w-100" name="address2" placeholder="address detail"><br>
 				</form>
@@ -158,8 +268,8 @@ function signUp() {
 			<br>
 		
 			<div class="wrap_btn">
-				<button type="button" onclick="signUp(); return false;">회원가입</button>
-				<button type="button" onclick="document.location.href = '/login.do'">취소</button>
+				<button type="button" onclick="validation(); return false;">회원가입</button>
+				<button type="button" class="btn2" onclick="document.location.href = '/demo/main/login.do'">취소</button>
 			</div>
 		</div>
 	</div>

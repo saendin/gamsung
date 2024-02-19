@@ -1,6 +1,7 @@
 package com.saendino.demo.cmm.mapper;
 
 import java.util.Map;
+
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
@@ -15,5 +16,14 @@ public interface UserMapper {
 
 	//유저 cnt
 	public Map<String, Object> selectUserList();
+
+	//아이디 중복체크
+	public int duplChkUserId(Map<String, Object> param);
+
+	//아이디 찾기
+	public String findId(Map<String, Object> param);
+
+	//새 비밀번호 설정
+	public int setNewPassword(Map<String, Object> param);
 	
 }

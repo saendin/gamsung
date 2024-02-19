@@ -1,8 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration>
+	<!-- 
+		%d, %date : 해당 로그가 발생한 시간
+		%p, %level : 로그 레벨
+		%n : 줄바꿈
+		%t, %thread : 해당 로그가 발생한 스레드명
+	 -->
+	<Properties>
+<!-- 		<Property name="PATTERN">%d %5p [%c] %m%n</Property> -->
+        <Property name="LOG_DATEFORMAT_PATTERN">{yyyy-MM-dd HH:mm:ss.SSS}</Property>
+        <Property name="LOG_LEVEL_PATTERN">%5p [%13.15t] {%-40.40C{1.}}: %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}</Property>
+	</Properties>
+
+
 	<Appenders>
-		<Console name="console" target="SYSTEM_OUT">
-			<PatternLayout pattern="%d %5p [%c] %m%n" />
+		<Console name="console" target="SYSTEM_OUT" follow="true">
+ 			<PatternLayout disableAnsi="false" pattern="%d${LOG_DATEFORMAT_PATTERN} ${LOG_LEVEL_PATTERN}"/>
 		</Console>
 	</Appenders>
 	
