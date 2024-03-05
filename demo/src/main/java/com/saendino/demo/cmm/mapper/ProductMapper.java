@@ -7,8 +7,6 @@ import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
 public interface ProductMapper {
-	//메뉴조회
 	public int insertProduct(Map<String,Object> param);
-
 	public ArrayList<?> selectProductList(Map<String, Object> param);
 }

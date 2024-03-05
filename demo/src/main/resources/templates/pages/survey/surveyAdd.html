@@ -30,25 +30,30 @@
 	    <script th:inline="javascript" type="text/javascript">
 			document.addEventListener("DOMContentLoaded", function(){
 			});
-	
+
+			
 			/* 설문 추가 */
 			function addSurvey() {
 	
-				let form = document.getElementById("productForm");
+				let form = document.getElementById("surveyForm");
 				
-				let formData = new FormData(form);
+				let formData = new FormData(form); //폼데이터 객체 생성
 			
 				// formData 값 객체 변환
 				let dataInfo = {};
 				formData.forEach((value, key) => dataInfo[key] = value);
 			
 				dataInfo.useAt = document.querySelector('input[name="useAt"]:checked').value;
+
+
+				// =====
+				console.log("폼데이터 객체 변환 확인", dataInfo);	//
+				// =====
+
 				
-				console.log(dataInfo);	//폼데이터를 객체로 변환
-					
+				//설문 등록
 				if(confirm("상품을 등록하시겠습니까?")) {
-					// 상품등록 진행
-					fetch( "/addProduct.do", {
+					fetch( "/addSurvey.do", {
 						  method: "post"
 						  , headers: {
 						    "Content-Type": 'application/json; charset=UTF-8',
@@ -72,7 +77,7 @@
 						if(data.resultCode == "S") {
 							console.log(data.resultMap);
 							
-							alert("상품 등록이 완료되었습니다!");
+							alert("설문 등록이 완료되었습니다!");
 							modal1.click()
 							selectProductList(); //데이터 리스트 재조회
 							
@@ -86,90 +91,217 @@
 					});
 				};
 			}
-			
-			/* 질문 추가 */
-			function addQuestion() {
-				let q_tr = document.createElement('tr');
-				q_tr.setAttribute('class','q_tr');
-				
-				q_tr.innerHTML =
-		           `
-                   <td><input type="text" name="q_content" placeholder="제목 없는 질문" style="width: 100%;"></td>
-                   <td>
-                   		<select class="q_type" name="q_type">
-                   			<option value="">::선택::</option>
-                   			<option value="text">단답형</option>
-                   			<option value="textarea">장문형</option>
-                   			<option value="radio" checked>객관식질문</option>
-                   			<option value="checkbox">체크박스</option>
-                   			<option value="select">드롭다운</option>
-                   		</select>
-                   </td>
-		           `;
-		             
-		        (document.getElementById('survey_q_tbody')).appendChild(q_tr);
-
-				 const type = document.getElementsByName('q_type')[0];
-				 
-				 type.addEventListener('change', (e) => {
-				    console.log(e)
-				   	if(!type.value) {
-						 return;
-					} else {
-					    addAnswer(type.value, e);
-					}
-				 });
-			}
 
 			
-			function addAnswer(type, e) {
-				console.log(e);
-				const closestQ = e.currentTarget.closest('.q_type');
-// 				closestQ.innerHTML = '';
+			var tbodyCnt = 0;
+			/* 질문tbody 추가 */
+			function addQuestionTbody() {
 				
-				let a_tr = document.createElement('tr');
-				a_tr.setAttribute('class','a_tr');
+				let qTbl = document.getElementById('survey_q_tbl'); //tbl
+
+				let num = qTbl.tBodies.length;
+				tbodyCnt = num;
 				
-	           	if(type == "text" || type == "radio" || type == "checkbox"){
-	        	   a_tr.innerHTML = '<td><input type="' + type + '">옵션</td>';
-	               
-	               if(type != "text") {
-	            	   a_tr.innerHTML =
-		            	   `<td><input type="` + type + `">옵션</td><td id="addOption">
-		                   <button id="btn_addOption" class="btn btn-sm btn-minus rounded-circle bg-light border" onclick="addOption();">
-		                   		<i class="fa fa-plus"></i>
-		                   </button>
-                   		</td> `;
-		           }
-	               
-		       	} else if(type == "select") {
-		    	   a_tr.innerHTML = '<td><' + type + '><option value="">:: 선택 ::</option></' + type + '></td>';
-		       	} else {
-		    	   a_tr.innerHTML = '<td><' + type + ' style="resize:none; width: 500px; height: 80px;"></' + type + '></td>';
-			   	}
+				//tbody생성
+				let tbody = document.createElement('tbody');
+				tbody.setAttribute('id','q_tbody_'+num); //속성 부여
 
-		        (document.getElementById('survey_q_tbody')).appendChild(a_tr);
-			}
-
-			function addOption() {
-				let a_tr = document.createElement('tr');
-		             
-				a_tr.innerHTML =
-		           `
-                   <td>
-                   		<input type="radio">옵션
-                   </td>
-                   <td id="addOption">
-	                   <button id="btn_addOption" class="btn btn-sm btn-minus rounded-circle bg-light border" onclick="addOption();">
-	                   		<i class="fa fa-plus"></i>
-	                   </button>
-                   </td>
-		           `;
-		           
-		        document.querySelectorAll('#btn_addOption')[0].remove();
+				qTbl.appendChild(tbody); 	//질문&답변 tbl에 tbody append
 		        
-		        (document.getElementById('survey_q_tbody')).appendChild(a_tr);
+				makeQuestion(); //질문 생성
+				
 			}
+
+			
+			/* 질문 만들기 */
+			var preType = "";
+			function makeQuestion() {
+				//질문 tbody
+				let tbody = document.getElementById('q_tbody_'+tbodyCnt);
+				
+				//질문 tr생성
+				let q_tr = document.createElement('tr'); //tr생성
+				q_tr.setAttribute('class','q_tr'); //속성 부여
+
+// 				let num = tbody.rows.length; //tbody 행 수
+
+				let html = ""; //태그
+				html = 
+	           	`<td><input type="text" name="q_content" placeholder="제목 없는 질문" style="width: 100%;"></td>
+                 <td><select class="type" name="type">
+                			<option value="">::선택::</option>
+                			<option value="text">단답형</option>
+                			<option value="textarea">장문형</option>
+                			<option value="radio" checked>객관식질문</option>
+                			<option value="checkbox">체크박스</option>
+                			<option value="select">드롭다운</option>
+                	</select>
+	                <button type="button" class="btn-addOption btn btn-sm btn-minus rounded-circle bg-light border">
+	                	<i class="fa fa-plus"></i>
+	                </button>
+	                <button type="button" class="btn-removeQuestion btn btn-sm btn-minus rounded-circle bg-light border" onclick="removeQuestion(this);">
+	                	<i class="fa fa-minus"></i>
+	                </button>
+                 </td>`;
+		        
+				q_tr.innerHTML = html; 	 //태그 삽입(질문, 타입)
+		        tbody.appendChild(q_tr); //tr append
+
+				// onclick="makeAnswer(this,'${type}');"
+				
+		        // type 선택시 옵션 생성 이벤트 추가
+
+
+				const addOption = tbody.querySelector('.btn-addOption');
+				const btnRmQ = tbody.querySelector('.btn-removeQuestion');
+				const type = tbody.querySelector('.type');
+				
+				addOption.addEventListener('click', (e) => {
+					if(type.value) {
+						makeAnswer(e.currentTarget, type.value);
+					} else {
+						tbody.querySelector('.btn-addOption').disabled = true;
+					}
+				});
+				
+				btnRmQ.addEventListener('click', (e) => {
+					removeQuestion(e.currentTarget);
+				});
+				
+				
+/* 				type.forEach(function(t) {
+				    console.log(t);
+				    
+					t.addEventListener('change', (e) => {
+						preType = t.value;
+						if(!t.value) {
+							return;
+						} else {
+							makeAnswer(e.currentTarget, t.value);
+						}
+					});
+				}); */
+				
+				type.addEventListener('change', (e) => {
+					if(!type.value) {
+						return;
+					} else {
+						makeAnswer(e.currentTarget, type.value);
+					}
+				});
+				 
+			}
+
+			
+			/* 답변문향 추가 */
+			function makeAnswer(btn, type) {
+				const tbody = btn.closest('tbody');
+				
+				//답변 tr생성
+				let a_tr = document.createElement('tr');
+				let num = tbody.rows.length-1; //옵션개수
+
+		        
+				let options = tbody.querySelectorAll('.option');
+
+				if(options.length > 4) {
+					alert('옵션은 5개를 초과할 수 없습니다!');
+					return;
+				}
+
+				if(options.length > 0) {
+					let childNode = tbody.querySelectorAll('.option')[0].childNodes[0];
+					
+					if(childNode.nodeName != 'input'.toUpperCase()) {
+						options.forEach(function(option) {
+							option.remove(); //option 삭제
+						})
+					} else {
+						if(childNode.getAttribute('type') != type) {
+							options.forEach(function(option) {
+								option.remove(); //option 삭제
+							})
+						}
+					}
+				}
+		        
+		        let html = ""; //태그
+                html += '<td id="option_'+ num +'" class="option">';
+				switch(type) {
+					case "radio" :
+					case "checkbox" :
+							tbody.querySelector('.btn-addOption').disabled = false;
+							// 옵션 + 옵션 추가 버튼
+			                html += 	'<input type="' + type + '">';
+			                html +=		'<input type="text" placeholder="옵션">';
+// 			                html +=    	`<button type="button" class="btn-addOption btn btn-sm btn-minus rounded-circle bg-light border" onclick="makeAnswer(this,'${type}');">`;
+// 			                html +=    		'<i class="fa fa-plus"></i>';
+// 			                html +=    	'</button>';
+	                   		break;
+					case "text" :
+						tbody.querySelector('.btn-addOption').disabled = true;
+						html += '<input type="' + type + '">'; break;
+					case "select" :
+						tbody.querySelector('.btn-addOption').disabled = true;
+						html += '<' + type + '><option value="">:: 선택 ::</option></' + type + '>'; break;
+					case "textarea" :
+						tbody.querySelector('.btn-addOption').disabled = true;
+						html += `<${type} style="resize:none; width: 500px; height: 80px;"></${type}>`; break;
+				}
+                html +=    	`<button type="button" class="btn-removeOption btn btn-sm btn-minus rounded-circle bg-light border" onclick="removeOption(this);">`;
+                html +=    		'<i class="fa fa-minus"></i>';
+                html +=    	'</button>';
+                html += '</td>';
+				
+				a_tr.innerHTML = html;
+
+				tbody.appendChild(a_tr);
+			}
+
+
+			/* 옵션 제거 */
+			function removeOption(e) {
+				e.closest('tbody').querySelector('.btn-addOption').disabled = false;
+				e.closest('.option').remove();
+			}
+			
+			/* 질문 제거 */
+			function removeQuestion(e) {
+				if(!e.closest('tbody').querySelector('.option')) {
+					e.closest('tbody').remove();
+				} else {
+					if(confirm('추가한 옵션이 존재합니다. 그래도 삭제하시겠습니까?')){ //왜 두번 뜨는지
+						e.closest('tbody').remove();
+					}
+				}
+			}
+			
+/* 			function addOption(btn, type) {
+				const tbody = btn.closest('tbody'); //선택한 타켓에서 가장 가까운 tbody
+				let a_tr = document.createElement('tr');
+
+		        let num = tbody.rows.length-1; //옵션개수
+		        
+		        let html = "";
+                html += '<td id="option_'+ num +'">';
+                html += 	'<input type="' + type + '">';
+                html +=		'<input type="text" placeholder="옵션">';
+                html += '</td>';
+                html += '<td id="addOption">';
+                html +=    	`<button type="button" class="btn-addOption btn btn-sm btn-minus rounded-circle bg-light border" onclick="addOption(this,'${type}');">`;
+                html +=    		'<i class="fa fa-plus"></i>';
+                html +=    	'</button>';
+                html += '</td>';
+	            
+				a_tr.innerHTML = html;
+
+				let btn_addOption = tbody.querySelector('.btn-addOption');
+				if(btn_addOption) {
+					btn_addOption.remove();//기존 옵션추가 버튼  제거
+				}
+
+				tbody.appendChild(a_tr); //새 옵션추가 버튼 추가
+			} */
 	    </script>
 	</head>
 
@@ -195,27 +327,39 @@
         <div class="container-fluid py-5">
             <div class="container py-5">
                 <div class="table-responsive">
-                    <table id="survey_tbl" class="table">
-                        <tbody>
-							<tr>
-							  	<th scope="col">TITLE</th>
-                              	<td><input type="text" id="title" style=""></td>
-							</tr>
-                            <tr>
-                            	<th scope="col">DATE</th>
-                                <td><input type="text" id="start_dt">~<input type="text" id="end_dt"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                 	<div class="input-group-btn">
-                        <button class="btn btn-sm btn-minus rounded-circle bg-light border" onclick="addQuestion();" style="float: right;">
-                        	<i class="fa fa-plus"></i>
-                        </button>
-                    </div>
-                    <table id="survey_q_tbl" class="table">
-                        <tbody id="survey_q_tbody">
-                        </tbody>
-                    </table>
+                
+                	<form id="surveyForm" name="surveyForm">
+                		<!-- 설문 제목 폼 -->
+	                    <table id="survey_tbl" class="table">
+	                        <tbody>
+								<tr>
+								  	<th scope="col">TITLE</th>
+	                              	<td><input type="text" id="title" style=""></td>
+								</tr>
+	                            <tr>
+	                            	<th scope="col">DATE</th>
+	                                <td><input type="text" id="start_dt">~<input type="text" id="end_dt"></td>
+	                            </tr>
+	                        </tbody>
+	                    </table>
+	                    <!-- //설문 제목 폼 -->
+	                    
+	                    <!-- 질문 추가 버튼 -->
+	                 	<div class="input-group-btn">
+	                        <button type="button" class="btn btn-sm btn-minus rounded-circle bg-light border" onclick="addQuestionTbody();" style="float: right;">
+	                        	<i class="fa fa-plus"></i>
+	                        </button>
+	                    </div>
+	                    <!-- //질문 추가 버튼 -->
+	                    
+	                    <!-- 질문&답변 -->
+	                    <table id="survey_q_tbl" class="table">
+	                        <tbody id="survey_q_tbody">
+	                        </tbody>
+	                    </table>
+	                    <!-- //질문&답변 -->
+	            	</form>
+	            	
                 </div>
             </div>
         </div>

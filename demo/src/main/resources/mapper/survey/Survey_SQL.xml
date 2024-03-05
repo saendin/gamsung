@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.saendino.demo.cmm.mapper.SurveyMapper">
+ 	<select id="selectSurveyKey" resultType="map">
+		/* selectSurveyKey 설문목록 키 생성 */
+		SELECT
+			'S' || LPAD(SURVEY_SN_SEQ.nextVal,9,'0') AS SSN
+		FROM
+			SURVEY
+	</select>
+	
+ 	<select id="selectSurveyList" resultType="map">
+		/* selectSurveyList 설문목록 조회 */
+		SELECT
+			SURVEY_SN
+			, TITLE
+			, REGIST_DT
+			, START_DT
+			, END_DT
+			, USE_AT
+			, DEL_AT
+		FROM
+			SURVEY
+	</select>
+	
+	<insert id="insertSurvey">
+		/* insertSurvey 설문 등록 */
+		INSERT INTO SURVEY (
+			S_SN
+			, TITLE
+			, REGIST_DT
+			, USE_AT
+			, DEL_AT
+			, START_DT
+			, END_DT
+		)
+		VALUES 
+		(
+			#{sSn}
+			, #{title}
+			, SYSDATE
+			, 'Y'
+			, 'N'
+			, TO_DATE(#{startDt},'YYYY-MM-DD')
+			, TO_DATE(#{endDt},'YYYY-MM-DD')
+		)
+		
+	</insert>
+	
+	<insert id="insertQuestion">
+		/* insertSurvey 질문 등록 */
+		INSERT INTO SURVEY_QUESTION (
+			Q_SN
+			, S_SN
+			, UPPER_Q_SN
+			, Q_TYPE
+			, Q_CONTENT
+		)
+		VALUES
+		<foreach collection="list" item="item" separator=",">
+		(
+			'Q' || LPAD(QUESTION_SN_SEQ.nextVal,9,'0')
+			, #{item.sSn}
+			, #{item.upperQSN}
+			, #{item.qType}
+			, #{item.qContent}
+		)
+		</foreach>
+	</insert>
+	
+	<insert id="insertAnswer">
+		/* insertAnswer 답변 등록 */
+		INSERT INTO SURVEY_ANSWER (
+			A_SN
+			, Q_SN
+			, A_CONTENT
+		)
+		VALUES (
+			'A' || LPAD(ANSWER_SN_SEQ.nextVal,9,'0')
+			, #{qSn}
+			, #{aContent}
+		)
+	</insert>
+	
+<!-- 	<select id="duplChkMenu" resultType="int">
+		SELECT COUNT(1) cnt
+		  FROM A_MENU
+		 WHERE MENU_NM = #{menuNm}
+	</select>
+	
+	<update id="updateMenu">
+		UPDATE A_MENU
+		   SET
+		   		MENU_NM 	= #{menuNm}
+		   		, UPDATE_DT = SYSDATE
+		   		, UPDATER 	= #{userSn}
+		 WHERE MENU_ID = #{menuId}
+	</update> -->
+</mapper>
